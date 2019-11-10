@@ -15,23 +15,23 @@ jupyter:
 
 ```python
 import arviz as az
-from collections import OrderedDict
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from fit_model import (
     get_varying_intercept_model_results,
     plot_varying_intercept_regression_lines,
     get_shrinkage_plot,
     get_model_results_dict,
-    plot_model_comparison,
+    plot_model_comparison_waic,
     plot_posterior_exp_mu
     )
 
 %matplotlib inline
 ```
 
-Investigate linear association between lnMean and lnSD
+## Investigate linear association between lnMean and lnSD
 
 ```python
 varying_intervept_model = get_varying_intercept_model_results()
@@ -40,12 +40,19 @@ _ = plot_varying_intercept_regression_lines(varying_intervept_model)
 _ = get_shrinkage_plot(varying_intervept_model)
 ```
 
+
+## Fit models and compare
+
 ```python
 model_res_dict = get_model_results_dict()
 ```
 
 ```python
-plot_model_comparison(model_res_dict)
+az.compare(model_res_dict, scale='log',  seed=1)
+```
+
+```python
+plot_model_comparison_waic(model_res_dict)
 ```
 
 ```python
@@ -104,17 +111,33 @@ plot_posterior_exp_mu(model_res_dict)
 ```
 
 ```python
-model_names = ['REMR', 'REMA', 'FEMA']
-
-data = OrderedDict(
-    (model, np.exp(model_res_dict[f'{model.lower()}_lnVR'].posterior.mu.values)) for model in model_names
+stat_funcs = {
+    'Mean': lambda x: (x ** 2).mean(),
+    'Median': lambda x: np.percentile(x ** 2, q=[50]),
+    'HPD 2.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
+    'HPD 97.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
+}
+beta_summary = az.summary(
+    model_res_dict['rema_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], credible_interval=0.95
 )
+beta_summary.index = ['$$\\tau^2$$']
+beta_summary[['Mean', 'Median', 'HPD 2.5%', 'HPD 97.5%']]
+```
 
-_ = az.plot_forest(
-    data,
-    combined=True,
-    credible_interval=0.95,
-    quartiles=True
+```python
+stat_funcs = {
+    'Mean': lambda x: (x ** 2).mean(),
+    'Median': lambda x: np.percentile(x ** 2, q=[50]),
+    'HPD 2.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
+    'HPD 97.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
+}
+beta_summary = az.summary(
+    model_res_dict['rema_lnCVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], credible_interval=0.95
 )
-_ = plt.title('95% credible intervals for VR parameter with quartiles')
+beta_summary.index = ['$$\\tau^2$$']
+beta_summary[['Mean', 'Median', 'HPD 2.5%', 'HPD 97.5%']]
+```
+
+```python
+plot_model_comparison_CIs(model_res_dict)
 ```

@@ -1,4 +1,5 @@
 import arviz as az
+from collections import OrderedDict
 import numpy as np
 import os
 import pystan
@@ -98,6 +99,7 @@ def plot_varying_intercept_regression_lines(data):
     plt.xlabel('lnMean')
     plt.xlim(x_min, x_max)
     plt.subplots_adjust(top=0.9, bottom=0.1)
+    plt.savefig(os.path.join(parent_dir_name, f'output/varying_intercept_regression_lines.svg'), format='svg', dpi=1200)
 
     return plt
 
@@ -144,6 +146,7 @@ def get_shrinkage_plot(data):
     plt.ylabel('lnSD')
     plt.title('Shrinkage effect of Bayesian varying intercept regression')
     axes.legend(loc='upper left')
+    plt.savefig(os.path.join(parent_dir_name, f'output/shrinkage_plot.svg'), format='svg', dpi=1200)
 
     return plt
 
@@ -228,11 +231,32 @@ def get_model_results_dict():
     return model_res_dict
 
 
-def plot_model_comparison(model_res_dict):
-    # model_res_dict = get_model_results_dict()
+def plot_model_comparison_waic(model_res_dict):
     model_compare = az.compare(model_res_dict, seed=1, scale='log', ic='waic')
     az.plot_compare(model_compare, plot_ic_diff=False, plot_standard_error=True, insample_dev=False)
-    plt.savefig(os.path.join(parent_dir_name, f'output/waic_model_comparison.png'))
+
+    plt.title('Model comparison based on WAIC with log scale')
+    plt.subplots_adjust(top=0.9, bottom=0.15)
+    plt.savefig(os.path.join(parent_dir_name, f'output/waic_model_comparison.svg'), format='svg', dpi=1200)
+
+
+def plot_model_comparison_CIs(model_res_dict):
+    model_names = ['remr_lnVR', 'rema_lnVR', 'fema_lnVR']
+
+    data = OrderedDict(
+        (model, np.exp(model_res_dict[model].posterior.mu.values)) for model in model_names
+    )
+
+    _ = az.plot_forest(
+        data,
+        combined=True,
+        credible_interval=0.95,
+        quartiles=True,
+        colors='black'
+    )
+    plt.title('95% credible intervals for mu parameter with quartiles')
+    plt.grid()
+    plt.savefig(os.path.join(parent_dir_name, f'output/hdi_model_comparison.svg'), format='svg', dpi=1200)
 
 
 ##############################################
@@ -257,5 +281,5 @@ def plot_posterior_exp_mu(model_res_dict):
             axes[ind].set_xlabel('$\exp(\mu)$')
             axes[ind].legend(loc='upper right')
             display_hpd(axes[ind], mcmc_values, credible_interval=0.95)
-        plt.subplots_adjust(top=0.9, bottom=0.1)
-        plt.savefig(os.path.join(parent_dir_name, f'output/posterior_exm_mu_{model}.png'))
+        plt.subplots_adjust(top=0.9, bottom=0.15)
+        plt.savefig(os.path.join(parent_dir_name, f'output/posterior_exp_mu_{model}.svg'), format='svg', dpi=1200)

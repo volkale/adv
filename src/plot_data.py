@@ -38,5 +38,5 @@ def get_lnMean_lnSD_plot():
         plt.plot((df_a.lnMean.values[0], df_p.lnMean.values[0]),
                  (df_a.lnSD.values[0], df_p.lnSD.values[0]), c='gray', linestyle='-', alpha=0.2)
 
-    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.png'))
+    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.svg'), format='svg', dpi=1200)
     return plt
