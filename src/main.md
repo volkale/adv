@@ -25,6 +25,7 @@ from fit_model import (
     get_shrinkage_plot,
     get_model_results_dict,
     plot_model_comparison_waic,
+    plot_model_comparison_CIs,
     plot_posterior_exp_mu
     )
 
