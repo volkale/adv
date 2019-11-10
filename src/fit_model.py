@@ -1,5 +1,4 @@
 import arviz as az
-from collections import OrderedDict
 import numpy as np
 import os
 import pystan
@@ -241,20 +240,22 @@ def plot_model_comparison_waic(model_res_dict):
 
 
 def plot_model_comparison_CIs(model_res_dict):
-    model_names = ['remr_lnVR', 'rema_lnVR', 'fema_lnVR']
-
-    data = OrderedDict(
-        (model, np.exp(model_res_dict[model].posterior.mu.values)) for model in model_names
-    )
-
+    var_names = ['remr_lnVR', 'rema_lnVR', 'fema_lnVR', 'rema_lnCVR', 'fema_lnCVR']
+    data = [
+        az.convert_to_dataset({model: np.exp(model_res_dict[model].posterior.mu.values)}) for model in var_names
+        ]
     _ = az.plot_forest(
         data,
         combined=True,
         credible_interval=0.95,
         quartiles=True,
-        colors='black'
+        colors='black',
+        figsize=(10, 4),
+        var_names=var_names,
+        model_names=['', '', '', '', '']
     )
-    plt.title('95% credible intervals for mu parameter with quartiles')
+    plt.xlim(0.78, 1.23)
+    plt.title('95% credible intervals for exp(mu) parameter with quartiles')
     plt.grid()
     plt.savefig(os.path.join(parent_dir_name, f'output/hdi_model_comparison.svg'), format='svg', dpi=1200)
 
