@@ -7,12 +7,10 @@ data {
 
 parameters {
     real mu;
-    real<lower=0> sigma;
 }
 
 model {
     mu ~ cauchy(0, 1);
-    sigma ~ cauchy(0, 1);
 
   // likelihood, which we only evaluate conditionally
     if(run_estimation==1){

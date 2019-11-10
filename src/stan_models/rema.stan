@@ -9,7 +9,6 @@ parameters {
     real mu;
     real<lower=0> tau; //between study variance
     real eta[N];
-    real<lower=0> sigma;
 }
 
 transformed parameters {
@@ -22,7 +21,6 @@ model {
     mu ~ cauchy(0, 1);
     tau ~ cauchy(0, 1);
     eta ~ normal(0, 1);
-    sigma ~ cauchy(0, 1);
 
   // likelihood, which we only evaluate conditionally
     if(run_estimation==1){
