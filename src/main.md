@@ -84,13 +84,36 @@ stat_funcs = {
     ('posterior percentiles', '75th'): lambda x: np.percentile(np.exp(x), q=[75]),
     ('posterior percentiles', '95th'): lambda x: np.percentile(np.exp(x), q=[95])
 }
+```
 
+```python
 mu_summary = az.summary(
     model_res_dict['remr_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95
 )
 mu_summary.index = ['REMR $$\exp(\mu)$$']
 mu_summary = mu_summary[columns]
 mu_summary.columns = pd.MultiIndex.from_tuples(columns)
+mu_summary
+```
+
+```python
+mu_summary = az.summary(
+    model_res_dict['rema_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95
+)
+mu_summary.index = ['REMA $$\exp(\mu)$$']
+mu_summary = mu_summary[columns]
+mu_summary.columns = pd.MultiIndex.from_tuples(columns)
+mu_summary
+```
+
+```python
+mu_summary = az.summary(
+    model_res_dict['fema_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95
+)
+mu_summary.index = ['FEMA $$\exp(\mu)$$']
+mu_summary = mu_summary[columns]
+mu_summary.columns = pd.MultiIndex.from_tuples(columns)
+mu_summary
 ```
 
 ```python
