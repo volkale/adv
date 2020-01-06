@@ -120,14 +120,14 @@ mu_summary
 stat_funcs = {
     'Mean': lambda x: x.mean(),
     'Median': lambda x: np.percentile(x, q=[50]),
-    'HPD 2.5%': lambda x: az.stats.hpd(x, credible_interval=0.95)[0],
-    'HPD 97.5%': lambda x: az.stats.hpd(x, credible_interval=0.95)[1]
+    '95% HPD l.b.': lambda x: az.stats.hpd(x, credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(x, credible_interval=0.95)[1]
 }
 beta_summary = az.summary(
     model_res_dict['remr_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['beta'], credible_interval=0.95
 )
 beta_summary.index = ['$$\\beta$$']
-beta_summary[['Mean', 'Median', 'HPD 2.5%', 'HPD 97.5%']]
+beta_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
 ```
 
 ```python
