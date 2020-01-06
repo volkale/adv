@@ -138,30 +138,72 @@ plot_posterior_exp_mu(model_res_dict)
 stat_funcs = {
     'Mean': lambda x: (x ** 2).mean(),
     'Median': lambda x: np.percentile(x ** 2, q=[50]),
-    'HPD 2.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
-    'HPD 97.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
+    '95% HPD l.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
 }
 beta_summary = az.summary(
     model_res_dict['rema_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], credible_interval=0.95
 )
 beta_summary.index = ['$$\\tau^2$$']
-beta_summary[['Mean', 'Median', 'HPD 2.5%', 'HPD 97.5%']]
+beta_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
 ```
 
 ```python
 stat_funcs = {
     'Mean': lambda x: (x ** 2).mean(),
     'Median': lambda x: np.percentile(x ** 2, q=[50]),
-    'HPD 2.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
-    'HPD 97.5%': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
+    '95% HPD l.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
 }
 beta_summary = az.summary(
     model_res_dict['rema_lnCVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], credible_interval=0.95
 )
 beta_summary.index = ['$$\\tau^2$$']
-beta_summary[['Mean', 'Median', 'HPD 2.5%', 'HPD 97.5%']]
+beta_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
 ```
 
 ```python
 plot_model_comparison_CIs(model_res_dict)
+```
+
+
+## Run simulation
+```python
+from simulation import get_simulation_results
+
+data = get_simulation_results()
+
+chains = data.posterior.chain.shape[0]
+draws = data.posterior.draw.shape[0]
+simulations = chains * draws
+N = 1000  # number of patients in the simulation
+
+placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)
+active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)
+
+fig, ax = plt.subplots(tight_layout=True)
+
+idx = 750  # pick one simulated data set
+_ = ax.hist(placebo_response[idx, :], bins=35, color='blue', histtype='step')
+_ = ax.hist(active_response[idx, :], bins=35, color='red',  histtype='step')
+_ = plt.title('Histogram of potential outcome response under \n placebo (blue) and active treatment (red)')
+```
+
+```python
+np.random.seed(0)
+W = np.random.binomial(1, 0.5, N) <= 0.5  # randomize N patients into active and placebo
+
+placebo_sd_response = data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)[idx, W].std()
+active_sd_response = data.posterior.Ya.values[:, :, :, 1].reshape(chains * draws, N)[idx, ~W].std()
+
+VR = active_sd_response / placebo_sd_response  # + 1 / (2 * (np.sum(W) - 1)) - 1 / (2 * (np.sum(~W) - 1))
+
+print(f'VR = {VR:.2f}')  # ignoring the small sample correction terms
+
+SD_TE = (
+    data.posterior.mu.values[:, :, :, 1].reshape(chains * draws, N)
+    - data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)
+)[idx, :].std()
+
+print(f'SD_TE = {SD_TE:.2f}')
 ```
