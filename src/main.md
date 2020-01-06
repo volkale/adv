@@ -173,6 +173,7 @@ from simulation import get_simulation_results
 
 data = get_simulation_results()
 
+
 chains = data.posterior.chain.shape[0]
 draws = data.posterior.draw.shape[0]
 simulations = chains * draws
@@ -181,20 +182,62 @@ N = 1000  # number of patients in the simulation
 placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)
 active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)
 
-fig, ax = plt.subplots(tight_layout=True)
+fig, ax = plt.subplots(figsize=(10, 6))
+fig.suptitle('Histogram of potential outcome response under placebo and active treatment')
 
 idx = 750  # pick one simulated data set
-_ = ax.hist(placebo_response[idx, :], bins=35, color='blue', histtype='step')
-_ = ax.hist(active_response[idx, :], bins=35, color='red',  histtype='step')
-_ = plt.title('Histogram of potential outcome response under \n placebo (blue) and active treatment (red)')
+_ = ax.hist(placebo_response[idx, :], bins=35, color='blue', histtype='step', label='placebo')
+_ = ax.hist(active_response[idx, :], bins=35, color='red',  histtype='step', label='active')
+ax.legend()
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.9, bottom=0.1)
+
+
+fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(10, 6), sharex='col', sharey='col')
+fig.suptitle('Potential outcome responses with baseline gauged to 0')
+
+for pr in placebo_response:
+    _ = axes[0, 0].plot([0, 1], [0, pr], linestyle='-', alpha=0.1, color='blue', label='placebo')
+    axes[0, 0].set_ylabel('response in HAMD17')
+_ = axes[0, 1].hist(placebo_response, orientation="horizontal", color='blue', label='placebo', bins=35, histtype='step', density=True)
+axes[0, 1].legend()
+
+for ar in active_response:
+    _ = axes[1, 0].plot([0, 1], [0, ar], linestyle='-', alpha=0.1, color='red', label='active')
+axes[1, 0].set_ylabel('response in HAMD17')
+_ = axes[1, 1].hist(active_response, orientation="horizontal", color='red', label='active', bins=35, histtype='step', density=True)
+axes[1, 1].legend()
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.9, bottom=0.1)
+
+
+np.random.seed(0)
+W = np.random.binomial(1, 0.8, N) == 0  # randomize N patients into active and placebo
+
+placebo_response = data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)[idx, W]
+active_response = data.posterior.Ya.values[:, :, :, 1].reshape(chains * draws, N)[idx, W]
+
+fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(10, 6))
+fig.suptitle('Individual treatment effect visualized as slope \n blue if active produces larger response, red otherwise')
+
+for pr, ar in zip(placebo_response, active_response):
+    _ = axes.plot([0, 1], [pr, ar], linestyle='-', alpha=0.1, color='blue' if ar > pr else 'red')
+
+axes.set_ylabel('response in HAMD17')
+
+plt.tight_layout()
+plt.subplots_adjust(top=0.9, bottom=0.1)
+
 ```
 
 ```python
 np.random.seed(0)
 W = np.random.binomial(1, 0.5, N) <= 0.5  # randomize N patients into active and placebo
 
-placebo_sd_response = data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)[idx, W].std()
-active_sd_response = data.posterior.Ya.values[:, :, :, 1].reshape(chains * draws, N)[idx, ~W].std()
+placebo_sd_response = data.posterior.Ya.values[:, :, :, 0].reshape(simulations, N)[idx, W].std()
+active_sd_response = data.posterior.Ya.values[:, :, :, 1].reshape(simulations, N)[idx, ~W].std()
 
 VR = active_sd_response / placebo_sd_response  # + 1 / (2 * (np.sum(W) - 1)) - 1 / (2 * (np.sum(~W) - 1))
 
