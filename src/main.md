@@ -179,6 +179,7 @@ chains = data.posterior.chain.shape[0]
 draws = data.posterior.draw.shape[0]
 simulations = chains * draws
 N = 1000  # number of patients in the simulation
+idx = 750  # pick one simulated data set
 
 placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)[idx, :]
 active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)[idx, :]
@@ -186,7 +187,6 @@ active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)[i
 fig, ax = plt.subplots(figsize=(10, 6))
 fig.suptitle('Histogram of potential outcome response under placebo and active treatment')
 
-idx = 750  # pick one simulated data set
 _ = ax.hist(placebo_response, bins=35, color='blue', histtype='step', label='placebo')
 _ = ax.hist(active_response, bins=35, color='red',  histtype='step', label='active')
 ax.legend()
