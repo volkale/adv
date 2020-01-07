@@ -172,22 +172,23 @@ plot_model_comparison_CIs(model_res_dict)
 from simulation import get_simulation_results
 
 data = get_simulation_results()
+```
 
-
+```python
 chains = data.posterior.chain.shape[0]
 draws = data.posterior.draw.shape[0]
 simulations = chains * draws
 N = 1000  # number of patients in the simulation
 
-placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)
-active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)
+placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)[idx, :]
+active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)[idx, :]
 
 fig, ax = plt.subplots(figsize=(10, 6))
 fig.suptitle('Histogram of potential outcome response under placebo and active treatment')
 
 idx = 750  # pick one simulated data set
-_ = ax.hist(placebo_response[idx, :], bins=35, color='blue', histtype='step', label='placebo')
-_ = ax.hist(active_response[idx, :], bins=35, color='red',  histtype='step', label='active')
+_ = ax.hist(placebo_response, bins=35, color='blue', histtype='step', label='placebo')
+_ = ax.hist(active_response, bins=35, color='red',  histtype='step', label='active')
 ax.legend()
 
 plt.tight_layout()
