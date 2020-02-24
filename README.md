@@ -1,8 +1,9 @@
 # Antidepressants Variability Ratio Bayesian Meta-Analysis
 
 This repo contains the code to reproduce the results of the paper
-"On the treatment effect heterogeneity of antidepressants in major depression.
-A Bayesian meta-analysis", Volkmann et al..
+["On the treatment effect heterogeneity of antidepressants in major depression.
+A Bayesian meta-analysis",
+Volkmann et al.](https://www.medrxiv.org/content/10.1101/2020.02.20.19015677v1).
 
 ## Installation - using Docker (recommended)
 In order to rerun this analysis the following two programs need
