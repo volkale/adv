@@ -215,7 +215,10 @@ plt.subplots_adjust(top=0.9, bottom=0.1)
 
 
 np.random.seed(0)
-W = np.random.binomial(1, 0.8, N) == 0  # randomize N patients into active and placebo
+# randomize N patients into active and placebo
+W = np.array([False for _ in range(N)])
+W[np.random.choice(range(N), int(N / 2), replace=False)] = True
+
 
 placebo_response = data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)[idx, W]
 active_response = data.posterior.Ya.values[:, :, :, 1].reshape(chains * draws, N)[idx, W]
@@ -235,7 +238,10 @@ plt.subplots_adjust(top=0.9, bottom=0.1)
 
 ```python
 np.random.seed(0)
-W = np.random.binomial(1, 0.5, N) <= 0.5  # randomize N patients into active and placebo
+# randomize N patients into active and placebo
+W = np.array([False for _ in range(N)])
+W[np.random.choice(range(N), int(N / 2), replace=False)] = True
+
 
 placebo_sd_response = data.posterior.Ya.values[:, :, :, 0].reshape(simulations, N)[idx, W].std()
 active_sd_response = data.posterior.Ya.values[:, :, :, 1].reshape(simulations, N)[idx, ~W].std()
