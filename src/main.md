@@ -252,7 +252,7 @@ print(f'VR = {VR:.2f}')  # ignoring the small sample correction terms
 
 SD_TE = (
     data.posterior.mu.values[:, :, :, 1].reshape(chains * draws, N)
-    - data.posterior.Ya.values[:, :, :, 0].reshape(chains * draws, N)
+    - data.posterior.mu.values[:, :, :, 0].reshape(chains * draws, N)
 )[idx, :].std()
 
 print(f'SD_TE = {SD_TE:.2f}')

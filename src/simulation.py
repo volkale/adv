@@ -13,7 +13,7 @@ stan_model_path = os.path.join(dir_name, 'stan_models')
 def get_simulation_results():
     data_dict = {
         'N': 1000,
-        'rho': -0.6,
+        'rho': -0.4,
         'sd_te': 6.5,
         'sd_m': 0.001,
         'lambda': 0.2,
