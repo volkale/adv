@@ -237,7 +237,7 @@ plt.subplots_adjust(top=0.9, bottom=0.1)
 ```
 
 ```python
-np.random.seed(0)
+np.random.seed(1)
 # randomize N patients into active and placebo
 W = np.array([False for _ in range(N)])
 W[np.random.choice(range(N), int(N / 2), replace=False)] = True
