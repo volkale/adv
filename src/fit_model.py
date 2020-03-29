@@ -74,25 +74,26 @@ def plot_varying_intercept_regression_lines(data):
     np.random.shuffle(alphas)
     np.random.shuffle(beta)
 
-    fig, axes = plt.subplots(nrows=len(scale_list), ncols=1, figsize=(10, 10), sharex=True, sharey=True)
+    fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(10, 10), sharex=True, sharey=True)
     fig.suptitle('Fitted varying intercept regression')
     for i, scale in enumerate(scale_list):
         scale_index = scale_list.index(scale)
 
         # Plot mean regression line
         y = alpha_means[scale_index] + beta_mean * x
-        _ = axes[i].plot(x, y, linestyle='--', alpha=0.5, color='black')
+        row, col = int(i / 2), i % 2
+        _ = axes[row, col].plot(x, y, linestyle='--', alpha=0.5, color='black')
         # Plot measured data
         df_a = df.query(f'scale == "{scale}" & is_active == 1')
         df_p = df.query(f'scale == "{scale}" & is_active == 0')
-        _ = axes[i].scatter(df_a.lnMean.values, df_a.lnSD.values)
-        _ = axes[i].scatter(df_p.lnMean.values, df_p.lnSD.values)
+        _ = axes[row, col].scatter(df_a.lnMean.values, df_a.lnSD.values, alpha=0.8)
+        _ = axes[row, col].scatter(df_p.lnMean.values, df_p.lnSD.values, alpha=0.8)
         # Plot sample trace regression
         for j in range(1000):
-            _ = axes[i].plot(x, alphas[j, i] + beta[j] * x, color='lightsteelblue', alpha=0.005)  # NOQA
+            _ = axes[row, col].plot(x, alphas[j, i] + beta[j] * x, color='lightsteelblue', alpha=0.005)  # NOQA
 
-        axes[i].set_ylabel('lnSD')
-        axes[i].set_title(f'{scale}')
+        axes[row, col].set_ylabel('lnSD')
+        axes[row, col].set_title(f'{scale}')
 
     plt.tight_layout()
     plt.xlabel('lnMean')
