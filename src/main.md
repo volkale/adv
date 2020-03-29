@@ -35,10 +35,10 @@ from fit_model import (
 ## Investigate linear association between lnMean and lnSD
 
 ```python
-varying_intervept_model = get_varying_intercept_model_results()
+varying_intercept_model = get_varying_intercept_model_results()
 
-_ = plot_varying_intercept_regression_lines(varying_intervept_model)
-_ = get_shrinkage_plot(varying_intervept_model)
+_ = plot_varying_intercept_regression_lines(varying_intercept_model)
+_ = get_shrinkage_plot(varying_intercept_model)
 ```
 
 
