@@ -69,7 +69,7 @@ model {
         }
     }
     else {
-        z_u[2] ~ normal(0, 1);
+        to_vector(z_u) ~ normal(0, 1);
     }
 }
 
