@@ -33,7 +33,7 @@ def load_data_file():
         return pd.DataFrame(df.iloc[2:, :].values, columns=all_columns)[used_columns]
 
 
-def get_model_input_df(only_placebo_controled=False):
+def get_model_input_df(pool_arms=True, only_placebo_controled=True):
     df = load_data_file()
     df['is_active'] = df['drug'].map(lambda x: x.lower() != 'placebo').astype(int)
     # perform type conversions
@@ -47,24 +47,27 @@ def get_model_input_df(only_placebo_controled=False):
     # rename column to get positive numbers
     df['negative_change_mean'] = - df['mean_endpoint']
     df['negative_change_sd'] = df['sd_endpoint']
+    df.rename(columns={'no_randomised': 'N'}, inplace=True)
 
-    # aggregate treatment arms from the same study, as advised in:
-    # https://handbook-5-1.cochrane.org/chapter_16/16_5_4_how_to_include_multiple_groups_from_one_study.htm
-    df_agg = get_pooled_data(
-        df,
-        arm_size='no_randomised',
-        mean='negative_change_mean',
-        sd='negative_change_sd'
-    )
-    df_agg['CV'] = df_agg['negative_change_sd'] / df_agg['negative_change_mean']
-    df_agg['lnCV'] = np.log(df_agg['CV'])
+    if pool_arms:
+        # aggregate treatment arms from the same study, as advised in:
+        # https://handbook-5-1.cochrane.org/chapter_16/16_5_4_how_to_include_multiple_groups_from_one_study.htm
+        df = get_pooled_data(
+            df,
+            arm_size='N',
+            mean='negative_change_mean',
+            sd='negative_change_sd'
+        )
+
+    df['CV'] = df['negative_change_sd'] / df['negative_change_mean']
+    df['lnCV'] = np.log(df['CV'])
 
     if only_placebo_controled:
         # only choose study ids that have placebo and active arm
-        placebo_controlled_study_ids = set(df_agg.query('is_active == 1')['study_id']) \
-            .intersection(df_agg.query('is_active == 0')['study_id'])
+        placebo_controlled_study_ids = set(df.query('is_active == 1')['study_id']) \
+            .intersection(df.query('is_active == 0')['study_id'])
 
-        df_agg = df_agg[df_agg.study_id.isin(placebo_controlled_study_ids)].copy()
+        df = df[df.study_id.isin(placebo_controlled_study_ids)].copy()
 
         # compute variability metrics
         get_var_lnCVR = var_lnCVR_factory(
@@ -72,14 +75,14 @@ def get_model_input_df(only_placebo_controled=False):
             sd='negative_change_sd'
         )
 
-        lnRR = df_agg.groupby(['study_id']).apply(get_lnRR).reset_index().rename(columns={0: 'lnRR'})
-        var_lnRR = df_agg.groupby(['study_id']).apply(get_var_lnRR).reset_index().rename(columns={0: 'var_lnRR'})
-        lnVR = df_agg.groupby(['study_id']).apply(get_lnVR).reset_index().rename(columns={0: 'lnVR'})
-        var_lnVR = df_agg.groupby(['study_id']).apply(get_var_lnVR).reset_index().rename(columns={0: 'var_lnVR'})
-        lnCVR = df_agg.groupby(['study_id']).apply(get_lnCVR).reset_index().rename(columns={0: 'lnCVR'})
-        var_lnCVR = df_agg.groupby(['study_id']).apply(get_var_lnCVR).reset_index().rename(columns={0: 'var_lnCVR'})
+        lnRR = df.groupby(['study_id']).apply(get_lnRR).reset_index().rename(columns={0: 'lnRR'})
+        var_lnRR = df.groupby(['study_id']).apply(get_var_lnRR).reset_index().rename(columns={0: 'var_lnRR'})
+        lnVR = df.groupby(['study_id']).apply(get_lnVR).reset_index().rename(columns={0: 'lnVR'})
+        var_lnVR = df.groupby(['study_id']).apply(get_var_lnVR).reset_index().rename(columns={0: 'var_lnVR'})
+        lnCVR = df.groupby(['study_id']).apply(get_lnCVR).reset_index().rename(columns={0: 'lnCVR'})
+        var_lnCVR = df.groupby(['study_id']).apply(get_var_lnCVR).reset_index().rename(columns={0: 'var_lnCVR'})
 
-        df_agg = df_agg \
+        df = df \
             .merge(lnRR, on=['study_id']) \
             .merge(var_lnRR, on=['study_id']) \
             .merge(lnVR, on=['study_id']) \
@@ -87,15 +90,15 @@ def get_model_input_df(only_placebo_controled=False):
             .merge(lnCVR, on=['study_id']) \
             .merge(var_lnCVR, on=['study_id'])
 
-    df_agg['lnMean'] = df_agg.apply(lambda x: np.log(x['negative_change_mean']), axis=1)
-    df_agg['lnSD'] = df_agg.apply(lambda x: get_lnSD(x['negative_change_sd'], x['N']), axis=1)
-    df_agg['var_lnMean'] = df_agg.apply(
+    df['lnMean'] = df.apply(lambda x: np.log(x['negative_change_mean']), axis=1)
+    df['lnSD'] = df.apply(lambda x: get_lnSD(x['negative_change_sd'], x['N']), axis=1)
+    df['var_lnMean'] = df.apply(
         lambda x: get_var_lnMean(x['negative_change_mean'], x['negative_change_sd'], x['N']),
         axis=1
     )
-    df_agg['var_lnSD'] = df_agg.apply(lambda x: get_var_lnSD(x['N']), axis=1)
+    df['var_lnSD'] = df.apply(lambda x: get_var_lnSD(x['N']), axis=1)
 
-    df_agg['study_rank'] = df_agg['study_id'].rank(method='dense').astype(int)
-    df_agg['scale_rank'] = df_agg['scale'].rank(method='dense').astype(int)
+    df['study_rank'] = df['study_id'].rank(method='dense').astype(int)
+    df['scale_rank'] = df['scale'].rank(method='dense').astype(int)
 
-    return df_agg
+    return df

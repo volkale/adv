@@ -18,7 +18,7 @@ stan_model_path = os.path.join(dir_name, 'stan_models')
 
 def get_varying_intercept_model_results():
     # read in Cipriani data
-    df = get_model_input_df(only_placebo_controled=False)
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
     data_dict = {
         'N': df.shape[0],
         'Y_meas': df['lnSD'].values,
@@ -52,8 +52,8 @@ def get_varying_intercept_model_results():
 
 
 def plot_varying_intercept_regression_lines(data):
-    df = get_model_input_df(only_placebo_controled=False)
-    # data = get_varying_intercept_model_results()
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
+
     # Extracting traces (and combine all chains)
     alphas = np.reshape(
         data.posterior.alpha.values,
@@ -104,7 +104,7 @@ def plot_varying_intercept_regression_lines(data):
 
 
 def get_shrinkage_plot(data):
-    df = get_model_input_df(only_placebo_controled=False)
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
     data_dict = {
         'N': df.shape[0],
         'Y_meas': df['lnSD'].values,
@@ -154,7 +154,7 @@ def get_shrinkage_plot(data):
 
 
 def get_model_results_dict():
-    df = get_model_input_df(only_placebo_controled=True)
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
     model_res_dict = {}
 
     # fixed effects meta analyses (lnVR and lnCVR)

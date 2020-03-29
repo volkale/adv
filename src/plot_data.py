@@ -8,8 +8,8 @@ plt.style.use('ggplot')
 parent_dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_lnMean_lnSD_plot():
-    df = get_model_input_df(only_placebo_controled=True)
+def get_lnMean_lnSD_plot(pool_arms=True, only_placebo_controled=True):
+    df = get_model_input_df(pool_arms=pool_arms, only_placebo_controled=only_placebo_controled)
     # check whether the standard deviation of the change variable is correlated with its mean (in active and placebo)
     # and save the OLS summary as html file
     scale_list = ['HAMD17', 'HAMD21', 'HAMD24', 'HAMDunspecified', 'MADRS']
