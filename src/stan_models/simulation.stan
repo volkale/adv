@@ -24,7 +24,7 @@ transformed parameters {
     
     real mu[N, 2];
     matrix[2, N] u;
-    cholesky_factor_cov[2, 2] L_u;
+    cov_matrix[2] Sigma;
 
     if(lambda < 1 && lambda > 0) {
         mu_high = theta * sqrt((1. - lambda) / lambda);
@@ -40,15 +40,15 @@ transformed parameters {
     tau = 8.8;                     // Cipriani et al. data
     delta = 2;
 
-    L_u[1, 1] = 1;
-    L_u[2, 2] = 1;
-    L_u[2, 1] = rho;
-    L_u[1, 2] = 0;
-    
     sigma_u[1] = 7.7;              // Cipriani et al. data SD of response 7.7
     sigma_u[2] = sd_te;
 
-    u = diag_pre_multiply(sigma_u, L_u) * z_u;
+    Sigma[1, 1] = sigma_u[1] * sigma_u[1];
+    Sigma[2, 2] = sigma_u[2] * sigma_u[2];
+    Sigma[2, 1] = rho * sigma_u[2] * sigma_u[1];
+    Sigma[1, 2] = rho *  sigma_u[1] * sigma_u[2];
+
+    u = cholesky_decompose(Sigma) * z_u;
 
     for (i in 1:N) {
         for (a in 1:2) {
