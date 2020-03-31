@@ -18,6 +18,9 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+
+from prepare_data import get_model_input_df
 
 from fit_model import (
     get_varying_intercept_model_results,
@@ -39,6 +42,12 @@ varying_intercept_model = get_varying_intercept_model_results()
 
 _ = plot_varying_intercept_regression_lines(varying_intercept_model)
 _ = get_shrinkage_plot(varying_intercept_model)
+```
+
+```python
+# naive linear regression
+df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
+sm.OLS(df['lnSD'].values, sm.add_constant(df['lnMean'].values)).fit().summary2()
 ```
 
 
@@ -179,7 +188,7 @@ chains = data.posterior.chain.shape[0]
 draws = data.posterior.draw.shape[0]
 simulations = chains * draws
 N = 1000  # number of patients in the simulation
-idx = 750  # pick one simulated data set
+idx = 1000  # pick one simulated data set
 
 placebo_response = data.posterior.mu.values[:, :, :, 0].reshape(simulations, N)[idx, :]
 active_response = data.posterior.mu.values[:, :, :, 1].reshape(simulations, N)[idx, :]
@@ -246,9 +255,9 @@ W[np.random.choice(range(N), int(N / 2), replace=False)] = True
 placebo_sd_response = data.posterior.Ya.values[:, :, :, 0].reshape(simulations, N)[idx, W].std()
 active_sd_response = data.posterior.Ya.values[:, :, :, 1].reshape(simulations, N)[idx, ~W].std()
 
-VR = active_sd_response / placebo_sd_response  # + 1 / (2 * (np.sum(W) - 1)) - 1 / (2 * (np.sum(~W) - 1))
+VR = active_sd_response / placebo_sd_response
 
-print(f'VR = {VR:.2f}')  # ignoring the small sample correction terms
+print(f'VR = {VR:.2f}')
 
 SD_TE = (
     data.posterior.mu.values[:, :, :, 1].reshape(chains * draws, N)
