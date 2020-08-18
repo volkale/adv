@@ -35,19 +35,8 @@ def load_data_file():
 
 def get_model_input_df(pool_arms=True, only_placebo_controled=True):
     df = load_data_file()
-    df['is_active'] = df['drug'].map(lambda x: x.lower() != 'placebo').astype(int)
-    # perform type conversions
-    df['mean_endpoint'] = df['mean_endpoint'].map(lambda x: float(x) if x != '*' else None)
-    df['sd_endpoint'] = df['sd_endpoint'].map(lambda x: float(x) if x != '*' else None)
-    df['no_randomised'] = df['no_randomised'].map(lambda x: int(x) if x != '*' else None)
 
-    # filter out studies in which the mean does not represent a change
-    df = df[df['mean_endpoint'] < 0]
-
-    # rename column to get positive numbers
-    df['negative_change_mean'] = - df['mean_endpoint']
-    df['negative_change_sd'] = df['sd_endpoint']
-    df.rename(columns={'no_randomised': 'N'}, inplace=True)
+    df = prepare_data(df)
 
     if pool_arms:
         # aggregate treatment arms from the same study, as advised in:
@@ -102,3 +91,30 @@ def get_model_input_df(pool_arms=True, only_placebo_controled=True):
     df['scale_rank'] = df['scale'].rank(method='dense').astype(int)
 
     return df
+
+
+def prepare_data(df):
+    convert_types(df)
+    df = filter_studies(df)
+    generate_new_columns(df)
+    return df
+
+
+def generate_new_columns(df):
+    df['is_active'] = df['drug'].map(lambda x: x.lower() != 'placebo').astype(int)
+    # rename column to get positive numbers
+    df['negative_change_mean'] = - df['mean_endpoint']
+    df['negative_change_sd'] = df['sd_endpoint']
+    df.rename(columns={'no_randomised': 'N'}, inplace=True)
+
+
+def filter_studies(df):
+    # filter out studies in which the mean does not represent a change
+    df = df[df['mean_endpoint'] < 0]
+    return df
+
+
+def convert_types(df):
+    df['mean_endpoint'] = df['mean_endpoint'].map(lambda x: float(x) if x != '*' else None)
+    df['sd_endpoint'] = df['sd_endpoint'].map(lambda x: float(x) if x != '*' else None)
+    df['no_randomised'] = df['no_randomised'].map(lambda x: int(x) if x != '*' else None)
