@@ -18,16 +18,7 @@ stan_model_path = os.path.join(dir_name, 'stan_models')
 
 def get_varying_intercept_model_results():
     # read in Cipriani data
-    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
-    data_dict = {
-        'N': df.shape[0],
-        'Y_meas': df['lnSD'].values,
-        'X_meas': df['lnMean'].values,
-        'SD_Y': np.sqrt(df['var_lnSD'].values),
-        'SD_X': np.sqrt(df['var_lnMean'].values),
-        'K': len(df.scale.unique()),
-        'scale_group': df.scale_rank.values
-    }
+    data_dict = prepareData()
     varying_intercept_stan_model = compile_model(
         os.path.join(stan_model_path, 'varying_intercept_regression.stan'),
         model_name='varying_intercept_regression'
@@ -49,6 +40,20 @@ def get_varying_intercept_model_results():
         log_likelihood='log_lik',
     )
     return data
+
+
+def prepareData():
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
+    data_dict = {
+        'N': df.shape[0],
+        'Y_meas': df['lnSD'].values,
+        'X_meas': df['lnMean'].values,
+        'SD_Y': np.sqrt(df['var_lnSD'].values),
+        'SD_X': np.sqrt(df['var_lnMean'].values),
+        'K': len(df.scale.unique()),
+        'scale_group': df.scale_rank.values
+    }
+    return data_dict
 
 
 def plot_varying_intercept_regression_lines(data):
@@ -105,16 +110,8 @@ def plot_varying_intercept_regression_lines(data):
 
 
 def get_shrinkage_plot(data):
-    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
-    data_dict = {
-        'N': df.shape[0],
-        'Y_meas': df['lnSD'].values,
-        'X_meas': df['lnMean'].values,
-        'SD_Y': np.sqrt(df['var_lnSD'].values),
-        'SD_X': np.sqrt(df['var_lnMean'].values),
-        'K': len(df.scale.unique()),
-        'scale_group': df.scale_rank.values
-    }
+    data_dict = prepareData()
+
     fig, axes = plt.subplots(figsize=(10, 10))
     x_meas = data_dict['X_meas']
     y_meas = data_dict['Y_meas']
