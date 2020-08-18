@@ -1,13 +1,13 @@
-import arviz as az
-import numpy as np
 import os
-import pystan
-from prepare_data import get_model_input_df
 
+import arviz as az
+import matplotlib.pyplot as plt
+import numpy as np
+import pystan
+import seaborn as sns
 from lib.plot_utils import display_hpd
 from lib.stan_utils import compile_model
-import matplotlib.pyplot as plt
-import seaborn as sns
+from prepare_data import get_model_input_df
 
 # set path to stan model files
 dir_name = os.path.dirname(os.path.abspath(__file__))
@@ -40,20 +40,6 @@ def get_varying_intercept_model_results():
         log_likelihood='log_lik',
     )
     return data
-
-
-def prepareData():
-    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
-    data_dict = {
-        'N': df.shape[0],
-        'Y_meas': df['lnSD'].values,
-        'X_meas': df['lnMean'].values,
-        'SD_Y': np.sqrt(df['var_lnSD'].values),
-        'SD_X': np.sqrt(df['var_lnMean'].values),
-        'K': len(df.scale.unique()),
-        'scale_group': df.scale_rank.values
-    }
-    return data_dict
 
 
 def plot_varying_intercept_regression_lines(data):
@@ -146,6 +132,7 @@ def get_shrinkage_plot(data):
     plt.savefig(os.path.join(parent_dir_name, f'output/shrinkage_plot.svg'), format='svg', dpi=1200)
 
     return plt
+
 
 ################################################################
 ################################################################
@@ -241,7 +228,7 @@ def plot_model_comparison_CIs(model_res_dict):
     var_names = ['remr_lnVR', 'rema_lnVR', 'fema_lnVR', 'rema_lnCVR', 'fema_lnCVR']
     data = [
         az.convert_to_dataset({model: np.exp(model_res_dict[model].posterior.mu.values)}) for model in var_names
-        ]
+    ]
     _ = az.plot_forest(
         data,
         combined=True,
@@ -282,3 +269,17 @@ def plot_posterior_exp_mu(model_res_dict):
             display_hpd(axes[ind], mcmc_values, credible_interval=0.95)
         plt.subplots_adjust(top=0.9, bottom=0.15)
         plt.savefig(os.path.join(parent_dir_name, f'output/posterior_exp_mu_{model}.svg'), format='svg', dpi=1200)
+
+
+def prepareData():
+    df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
+    data_dict = {
+        'N': df.shape[0],
+        'Y_meas': df['lnSD'].values,
+        'X_meas': df['lnMean'].values,
+        'SD_Y': np.sqrt(df['var_lnSD'].values),
+        'SD_X': np.sqrt(df['var_lnMean'].values),
+        'K': len(df.scale.unique()),
+        'scale_group': df.scale_rank.values
+    }
+    return data_dict
