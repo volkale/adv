@@ -15,6 +15,8 @@ def get_pooled_sd(n_i: np.array, mu_i: np.array, sd_i: np.array) -> np.array:
     )
 
 
+# aggregate treatment arms from the same study, as advised in:
+# https://handbook-5-1.cochrane.org/chapter_16/16_5_4_how_to_include_multiple_groups_from_one_study.htm
 def get_pooled_data(df, arm_size, mean, sd):
     df_agg = pd.DataFrame(
         df.groupby(['study_id', 'is_active']).apply(

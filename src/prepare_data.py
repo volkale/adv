@@ -39,14 +39,7 @@ def get_model_input_df(pool_arms=True, only_placebo_controled=True):
     df = prepare_data(df)
 
     if pool_arms:
-        # aggregate treatment arms from the same study, as advised in:
-        # https://handbook-5-1.cochrane.org/chapter_16/16_5_4_how_to_include_multiple_groups_from_one_study.htm
-        df = get_pooled_data(
-            df,
-            arm_size='N',
-            mean='negative_change_mean',
-            sd='negative_change_sd'
-        )
+        df = get_pooled_data(df, arm_size='N', mean='negative_change_mean', sd='negative_change_sd')
 
     df['CV'] = df['negative_change_sd'] / df['negative_change_mean']
     df['lnCV'] = np.log(df['CV'])
