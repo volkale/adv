@@ -13,12 +13,12 @@ from prepare_data import get_model_input_df
 dir_name = os.path.dirname(os.path.abspath(__file__))
 parent_dir_name = os.path.dirname(dir_name)
 stan_model_path = os.path.join(dir_name, 'stan_models')
+
+
 # investigate correlation between lnMean and lnSD
-
-
 def get_varying_intercept_model_results():
     # read in Cipriani data
-    data_dict = prepareData()
+    data_dict = prepare_data()
     varying_intercept_stan_model = compile_model(
         os.path.join(stan_model_path, 'varying_intercept_regression.stan'),
         model_name='varying_intercept_regression'
@@ -96,7 +96,7 @@ def plot_varying_intercept_regression_lines(data):
 
 
 def get_shrinkage_plot(data):
-    data_dict = prepareData()
+    data_dict = prepare_data()
 
     fig, axes = plt.subplots(figsize=(10, 10))
     x_meas = data_dict['X_meas']
@@ -271,7 +271,7 @@ def plot_posterior_exp_mu(model_res_dict):
         plt.savefig(os.path.join(parent_dir_name, f'output/posterior_exp_mu_{model}.svg'), format='svg', dpi=1200)
 
 
-def prepareData():
+def prepare_data():
     df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
     data_dict = {
         'N': df.shape[0],
