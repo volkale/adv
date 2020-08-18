@@ -21,16 +21,16 @@ parent_dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_data_file():
-        df = pd.read_excel(os.path.join(parent_dir_name, 'data/Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx'))
-        all_columns = [
-            'study_id', 'year_published', 'drug', 'no_randomised', 'responders',
-            'is_imputed_baseline', 'remitters', 'is_imputed_endpoint', 'N comp+imputed_baseline',
-            'definition_of_response', 'definition_of_remission', 'dropouts_total',
-            'dropouts_sideeffects', 'scale', 'mean_pre', 'weeks', 'N comp+imputed_endpoint',
-            'mean_endpoint', 'sd_endpoint'
-        ]
-        used_columns = ['study_id', 'drug', 'no_randomised', 'mean_endpoint', 'sd_endpoint', 'scale']
-        return pd.DataFrame(df.iloc[2:, :].values, columns=all_columns)[used_columns]
+    df = pd.read_excel(os.path.join(parent_dir_name, 'data/Cipriani et al_GRISELDA_Lancet 2018_Open data.xlsx'))
+    all_columns = [
+        'study_id', 'year_published', 'drug', 'no_randomised', 'responders',
+        'is_imputed_baseline', 'remitters', 'is_imputed_endpoint', 'N comp+imputed_baseline',
+        'definition_of_response', 'definition_of_remission', 'dropouts_total',
+        'dropouts_sideeffects', 'scale', 'mean_pre', 'weeks', 'N comp+imputed_endpoint',
+        'mean_endpoint', 'sd_endpoint'
+    ]
+    used_columns = ['study_id', 'drug', 'no_randomised', 'mean_endpoint', 'sd_endpoint', 'scale']
+    return pd.DataFrame(df.iloc[2:, :].values, columns=all_columns)[used_columns]
 
 
 def get_model_input_df(pool_arms=True, only_placebo_controled=True):
