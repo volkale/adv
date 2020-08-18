@@ -87,9 +87,9 @@ def get_model_input_df(pool_arms=True, only_placebo_controled=True):
 
 
 def prepare_data(df):
-    convert_types(df)
+    df = convert_types(df)
     df = filter_studies(df)
-    generate_new_columns(df)
+    df = generate_new_columns(df)
     return df
 
 
@@ -99,6 +99,7 @@ def generate_new_columns(df):
     df['negative_change_mean'] = - df['mean_endpoint']
     df['negative_change_sd'] = df['sd_endpoint']
     df.rename(columns={'no_randomised': 'N'}, inplace=True)
+    return df
 
 
 def filter_studies(df):
@@ -111,3 +112,4 @@ def convert_types(df):
     df['mean_endpoint'] = df['mean_endpoint'].map(lambda x: float(x) if x != '*' else None)
     df['sd_endpoint'] = df['sd_endpoint'].map(lambda x: float(x) if x != '*' else None)
     df['no_randomised'] = df['no_randomised'].map(lambda x: int(x) if x != '*' else None)
+    return df
