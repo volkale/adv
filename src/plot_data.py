@@ -40,3 +40,15 @@ def get_lnMean_lnSD_plot():
 
     plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.svg'), format='svg', dpi=1200)
     return plt
+
+
+def get_bar_chart_studies_per_depression_scale():
+    df = get_model_input_df()
+    tmp = df.groupby('scale').agg({'study_id': lambda x: len(x.unique())}).reset_index()
+    fig, ax = plt.subplots()
+    _ = ax.bar(x=tmp.scale, height=tmp.study_id, color='grey')
+    _ = ax.set_title('studies per depression scale')
+    _ = plt.xticks(rotation=75)
+    _ = plt.ylabel('count')
+    plt.savefig(os.path.join(parent_dir_name, f'output/bar_studies_per_depression_scale.svg'), format='svg', dpi=1200)
+    return plt
