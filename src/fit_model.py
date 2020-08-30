@@ -76,12 +76,13 @@ def plot_varying_intercept_regression_lines(data):
 
     fig, axes = plt.subplots(nrows=4, ncols=2, figsize=(10, 10), sharex=True, sharey=True)
     fig.suptitle('Fitted varying intercept regression')
-    for i, scale in enumerate(scale_list):
-        scale_index = scale_list.index(scale)
+    d = df[['scale', 'scale_rank']].drop_duplicates().set_index('scale').to_dict('dict')['scale_rank']
+    for scale in scale_list:
+        scale_index = d[scale] - 1
 
         # Plot mean regression line
         y = alpha_means[scale_index] + beta_mean * x
-        row, col = int(i / 2), i % 2
+        row, col = int(scale_index / 2), scale_index % 2
         _ = axes[row, col].plot(x, y, linestyle='--', alpha=0.5, color='black')
         # Plot measured data
         df_a = df.query(f'scale == "{scale}" & is_active == 1')
@@ -90,7 +91,7 @@ def plot_varying_intercept_regression_lines(data):
         _ = axes[row, col].scatter(df_p.lnMean.values, df_p.lnSD.values, alpha=0.8)
         # Plot sample trace regression
         for j in range(1000):
-            _ = axes[row, col].plot(x, alphas[j, i] + beta[j] * x, color='lightsteelblue', alpha=0.005)  # NOQA
+            _ = axes[row, col].plot(x, alphas[j, scale_index] + beta[j] * x, color='lightsteelblue', alpha=0.005)  # NOQA
 
         axes[row, col].set_ylabel('lnSD')
         axes[row, col].set_title(f'{scale}')
