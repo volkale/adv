@@ -10,7 +10,7 @@ clean:
 	rm -rf *.png
 	rm -rf build
 
-build:
+build: clean
 	docker build -t $(NAMESPACE) .
 
 run:
