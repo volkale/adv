@@ -212,37 +212,7 @@ def get_model_results_dict():
         observed_data=['Y_meas', 'X_meas'],
         log_likelihood='log_lik',
     )
-
     model_res_dict[f'{model}_{effect_statistic}'] = data
-
-    model = 'remr_bs'
-    stan_model = compile_model(
-        os.path.join(stan_model_path, f'{model}.stan'),
-        model_name=model
-    )
-    effect_statistic = 'lnVR'
-    data_dict = get_data_dict(df, effect_statistic)
-
-    fit = stan_model.sampling(
-        data=data_dict,
-        iter=4000,
-        warmup=1000,
-        chains=3,
-        control={'adapt_delta': 0.99},
-        check_hmc_diagnostics=True,
-        seed=1
-    )
-    pystan.check_hmc_diagnostics(fit)
-
-    data = az.from_pystan(
-        posterior=fit,
-        posterior_predictive=['Y_pred'],
-        observed_data=['Y_meas', 'X_meas'],
-        log_likelihood='log_lik',
-    )
-
-    model_res_dict[f'{model}_{effect_statistic}'] = data
-
     return model_res_dict
 
 
@@ -265,16 +235,12 @@ def get_data_dict(df, effect_statistic):
             {f'var_{effect_statistic}': 'first'}).reset_index()[f'var_{effect_statistic}'].values),
         'SD_X': np.sqrt(df.groupby(['study_id']).agg(
             {'var_lnRR': 'first'}).reset_index()['var_lnRR'].values),
-        'X0_meas': df.groupby(['study_id']).apply(
-            lambda x: np.sum(x['baseline'] * x['N']) / np.sum(x['N'])
-        ).reset_index()[0].values,
-        'SD_X0': df.groupby('study_id').agg({'N': lambda x: 1. / np.sqrt(np.sum(x))})['N'].values,
         'run_estimation': 1
     }
 
 
 def plot_model_comparison_CIs(model_res_dict):
-    var_names = ['remr_bs_lnVR', 'remr_lnVR', 'rema_lnVR', 'fema_lnVR', 'rema_lnCVR', 'fema_lnCVR']
+    var_names = ['remr_lnVR', 'rema_lnVR', 'fema_lnVR', 'rema_lnCVR', 'fema_lnCVR']
     data = [
         az.convert_to_dataset({model: np.exp(model_res_dict[model].posterior.mu.values)}) for model in var_names
         ]
@@ -286,7 +252,7 @@ def plot_model_comparison_CIs(model_res_dict):
         colors='black',
         figsize=(10, 4),
         var_names=var_names,
-        model_names=['', '', '', '', '', '']
+        model_names=len(var_names) * ['']
     )
     plt.xlim(0.78, 1.23)
     plt.title('95% credible intervals for exp(mu) parameter with quartiles')

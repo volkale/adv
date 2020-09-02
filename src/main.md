@@ -46,7 +46,7 @@ _ = get_shrinkage_plot(varying_intercept_model)
 
 ```python
 # naive linear regression
-df = get_model_input_df(pool_arms=True, only_placebo_controled=True)
+df = get_model_input_df()
 sm.OLS(df['lnSD'].values, sm.add_constant(df['lnMean'].values)).fit().summary2()
 ```
 
