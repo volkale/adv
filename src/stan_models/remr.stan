@@ -28,7 +28,7 @@ model {
     tau ~ cauchy(0, 1);
     eta ~ normal(0, 1);
 
-    X ~ normal(0, 10);
+    X ~ normal(0, 2.5);
     X_meas ~ normal(X, SD_X);
 
   // likelihood, which we only evaluate conditionally
