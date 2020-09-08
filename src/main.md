@@ -175,6 +175,67 @@ beta_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
 plot_model_comparison_CIs(model_res_dict)
 ```
 
+## Baseline severity
+```python
+from baseline_severity import data, get_baseline_severity_posterior_plot
+
+plt = get_baseline_severity_posterior_plot(data)
+```
+
+```pythonstat_funcs = {
+    'Mean': lambda x: np.exp(x).mean(),
+    'SD': lambda x: np.exp(x).std(),
+    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
+    '95% HPD l.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[1]
+}
+mu_summary = az.summary(
+    data, stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95
+)
+mu_summary.index = ['$\exp(\mu)$']
+mu_summary = mu_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
+
+stat_funcs = {
+    'Mean': lambda x: (x ** 2).mean(),
+    'SD': lambda x: (x ** 2).std(),
+    'Median': lambda x: np.percentile(x ** 2, q=[50]),
+    '95% HPD l.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(x ** 2, credible_interval=0.95)[1]
+}
+tau_summary = az.summary(
+    data, stat_funcs=stat_funcs, extend=False, var_names=['tau'], credible_interval=0.95
+)
+tau_summary.index = ['$$\\tau^2$$']
+tau_summary = tau_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
+
+
+stat_funcs = {
+    'Mean': lambda x: x.mean(),
+    'SD': lambda x: x.std(),
+    'Median': lambda x: np.percentile(x, q=[50]),
+    '95% HPD l.b.': lambda x: az.stats.hpd(x, credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(x, credible_interval=0.95)[1]
+}
+beta_summary = az.summary(
+    data, stat_funcs=stat_funcs, extend=False, var_names=['beta'], credible_interval=0.95
+)
+beta_summary.index = ['$\\beta$']
+beta_summary = beta_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
+
+
+gamma_summary = az.summary(
+    data, stat_funcs=stat_funcs, extend=False, var_names=['gamma'], credible_interval=0.95
+)
+gamma_summary.index = ['$\gamma$']
+gamma_summary = gamma_summary[['Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
+
+
+pd.concat(
+    [
+        mu_summary, tau_summary, beta_summary, gamma_summary
+    ]
+)
+```
 
 ## Run simulation
 ```python
