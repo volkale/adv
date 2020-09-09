@@ -74,7 +74,7 @@ for drug_class in drug_classes:
 
 # plots
 def plot_model_comparison_CIs(model_res_dict):
-    fig, axes = plt.subplots(nrows=2)
+    fig, ax = plt.subplots(nrows=1)
     datasets = [
         az.convert_to_dataset(
             {drug_class: np.exp(model_res_dict[drug_class].posterior.mu.values)}
@@ -88,35 +88,8 @@ def plot_model_comparison_CIs(model_res_dict):
         colors='black',
         var_names=drug_classes,
         model_names=['', '', '', ''],
-        ax=axes[0]
+        ax=ax
     )
-    axes[0].set_title('95% HDI exp(mu)')
-
-    stat_funcs = {
-        'Mean': lambda x: np.exp(x).mean(),
-        'SD': lambda x: np.exp(x).std(),
-        'Median': lambda x: np.percentile(np.exp(x), q=[50]),
-        '95% HPD l.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[0],
-        '95% HPD u.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[1]
-    }
-    dfs = []
-    for drug_class in drug_classes:
-        mu_summary = az.summary(
-            model_res_dict[drug_class],
-            stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95, round_to=2
-        )
-        mu_summary['drug class'] = drug_class
-        dfs.append(
-            mu_summary[['drug class', 'Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
-        )
-    df_summary = pd.concat(dfs, axis=0)
-    axes[1].axis('off')
-
-    _ = axes[1].table(
-        cellText=df_summary.values, colWidths=[0.2] * len(df_summary.columns),
-        colLabels=df_summary.columns,
-        cellLoc='center', rowLoc='center',
-        loc='center'
-    )
+    ax.set_title('95% HDI exp(mu)')
     plt.savefig(os.path.join(parent_dir_name, f'output/hdi_drug_class_comparison.svg'), format='svg', dpi=1200)
     return plt

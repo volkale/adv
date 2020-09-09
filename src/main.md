@@ -245,6 +245,26 @@ from subgroup_anlysis import model_res_dict, plot_model_comparison_CIs
 plt = get_baseline_severity_posterior_plot(data)
 ```
 
+```python
+stat_funcs = {
+    'Mean': lambda x: np.exp(x).mean(),
+    'SD': lambda x: np.exp(x).std(),
+    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
+    '95% HPD l.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[0],
+    '95% HPD u.b.': lambda x: az.stats.hpd(np.exp(x), credible_interval=0.95)[1]
+}
+dfs = []
+for drug_class in ['atypical', 'ssri', 'ssnri', 'tca']:
+    mu_summary = az.summary(
+        model_res_dict[drug_class],
+        stat_funcs=stat_funcs, extend=False, var_names=['mu'], credible_interval=0.95, round_to=2
+    )
+    mu_summary['drug class'] = drug_class
+    dfs.append(
+        mu_summary[['drug class', 'Mean', 'Median', '95% HPD l.b.', '95% HPD u.b.']]
+    )
+df_summary = pd.concat(dfs, axis=0)
+```
 ## Run simulation
 ```python
 from simulation import get_simulation_results
