@@ -182,7 +182,8 @@ from baseline_severity import data, get_baseline_severity_posterior_plot
 plt = get_baseline_severity_posterior_plot(data)
 ```
 
-```pythonstat_funcs = {
+```python
+stat_funcs = {
     'Mean': lambda x: np.exp(x).mean(),
     'SD': lambda x: np.exp(x).std(),
     'Median': lambda x: np.percentile(np.exp(x), q=[50]),
@@ -235,6 +236,13 @@ pd.concat(
         mu_summary, tau_summary, beta_summary, gamma_summary
     ]
 )
+```
+
+## Subgroup analysis
+```python
+from subgroup_anlysis import model_res_dict, plot_model_comparison_CIs
+
+plt = get_baseline_severity_posterior_plot(data)
 ```
 
 ## Run simulation
