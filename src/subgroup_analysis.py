@@ -19,11 +19,8 @@ def get_data_dict(df):
     return {
         'N': len(df.study_id.unique()),
         'Y_meas': df.groupby(['study_id']).agg({effect_statistic: 'first'}).reset_index()[effect_statistic].values,
-        # 'X_meas': df.groupby(['study_id']).agg({'lnRR': 'first'}).reset_index()['lnRR'].values,
         'SD_Y': np.sqrt(df.groupby(['study_id']).agg(
             {f'var_{effect_statistic}': 'first'}).reset_index()[f'var_{effect_statistic}'].values),
-        # 'SD_X': np.sqrt(df.groupby(['study_id']).agg(
-        #     {'var_lnRR': 'first'}).reset_index()['var_lnRR'].values),
         'run_estimation': 1
     }
 
