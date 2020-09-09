@@ -88,18 +88,23 @@ def get_baseline_severity_posterior_plot(data):
     )
 
     fig, axes = plt.subplots(nrows=3, sharex=True, sharey=True, figsize=(10, 10))
-    plt.xlabel('normalized baseline severity')
+    plt.xlabel('Baseline severity on HAMD 17 scale')
     axes[0].set_title('posterior samples')
     axes[1].set_ylabel('meta analytic mean VR')
     for i, lnRR in enumerate([0, 0.25, 0.5]):
         ax = axes[i]
         y = mu_trace + gamma_trace * norm_baseline_severity + beta_trace * lnRR
-        _ = ax.plot(norm_baseline_severity, np.exp(y[0]), color='lightsteelblue', alpha=0.5, label = f'lnRR={lnRR}')  # NOQA
+        _ = ax.plot(
+            norm_baseline_severity, np.exp(y[0]), color='lightsteelblue', alpha=0.5, label=f'RR={np.exp(lnRR):.1f}'
+        )
         for j in range(1, 500):
             _ = ax.plot(norm_baseline_severity, np.exp(y[j]), color='lightsteelblue', alpha=0.5)  # NOQA
         y = mu_trace.mean() + gamma_trace.mean() * norm_baseline_severity + beta_trace.mean() * lnRR
         _ = ax.plot(norm_baseline_severity, np.exp(y), color='black', alpha=0.5)  # NOQA
         ax.legend(loc='upper left')
+
+    locs, labels = plt.xticks()
+    plt.setp(axes, xticks=locs[1:-1], xticklabels=[int(round(52 * x, 0)) for x in locs[1:-1]])
 
     plt.savefig(os.path.join(parent_dir_name, f'output/baseline_severity.svg'), format='svg', dpi=1200)
 
