@@ -4,8 +4,7 @@ data {
     real X_meas[N];
     real<lower=0> SD_Y[N];
     real<lower=0> SD_X[N];
-    real<lower=0, upper=1> X0_meas[N];
-    real<lower=0> SD_X0[N];
+    real<lower=0, upper=1> X0[N];
     int<lower=0, upper=1> run_estimation; // a switch to evaluate the likelihood
 }
 
@@ -15,16 +14,16 @@ parameters {
     real<lower=0> tau; //between study variance
     real eta[N];
     real gamma;
-
     real X[N];
-    real X0[N];
 }
 
 transformed parameters {
+  real alpha[N];
   real Y[N];
-  for (i in 1:N)
-    Y[i] = mu + gamma * X0[i] + beta * X[i] + tau * eta[i];
-
+  for (i in 1:N) {
+    alpha[i] = mu + tau * eta[i];
+    Y[i] = alpha[i] + beta * X[i] + gamma * X0[i];
+  }
 }
 
 model {
@@ -36,9 +35,6 @@ model {
 
     X ~ normal(0, 2.5);
     X_meas ~ normal(X, SD_X);
-
-    X0 ~ normal(0, 10);
-    X0_meas ~ normal(X0, SD_X0);
 
   // likelihood, which we only evaluate conditionally
     if(run_estimation==1){
