@@ -3,7 +3,6 @@ import numpy as np
 import os
 import pystan
 import matplotlib.pyplot as plt
-import pickle
 
 from lib.stan_utils import compile_model, get_pickle_filename, get_model_code
 from prepare_data import (
@@ -16,57 +15,53 @@ dir_name = os.path.dirname(os.path.abspath(__file__))
 parent_dir_name = os.path.dirname(dir_name)
 stan_model_path = os.path.join(dir_name, 'stan_models')
 
-df = get_formatted_data()
-df = df.query('is_placebo_controlled==1 and has_mean_pre==1 and known_max_value==1')
-df = aggregate_treatment_arms(df)
-df = get_variability_effect_sizes(df)
-df['mean_pre'] = df.mean_pre.astype(float)
-df = df.query('mean_pre > 0')
 
-effect_statistic = 'lnVR'
-data_dict = {
-    'N': len(df.study_id.unique()),
-    'Y_meas': df.groupby(['study_id']).agg({effect_statistic: 'first'}).reset_index()[effect_statistic].values,
-    'X_meas': df.groupby(['study_id']).agg({'lnRR': 'first'}).reset_index()['lnRR'].values,
-    'SD_Y': np.sqrt(df.groupby(['study_id']).agg(
-        {f'var_{effect_statistic}': 'first'}).reset_index()[f'var_{effect_statistic}'].values),
-    'SD_X': np.sqrt(df.groupby(['study_id']).agg(
-        {'var_lnRR': 'first'}).reset_index()['var_lnRR'].values),
-    'X0_meas': df.groupby(['study_id']).apply(
-        lambda x: np.sum(x['baseline'] * x['N']) / np.sum(x['N'])
-    ).reset_index()[0].values,
-    'SD_X0': df.groupby('study_id').agg({'N': lambda x: 0.5 / np.sqrt(np.sum(x))})['N'].values,
-    'run_estimation': 1
-}
+def get_baseline_severity_model():
+    df = get_formatted_data()
+    df = df.query('is_placebo_controlled==1 and has_mean_pre==1 and known_max_value==1')
+    df = aggregate_treatment_arms(df)
+    df = get_variability_effect_sizes(df)
+    df['mean_pre'] = df.mean_pre.astype(float)
+    df = df.query('mean_pre > 0')
 
+    effect_statistic = 'lnVR'
+    data_dict = {
+        'N': len(df.study_id.unique()),
+        'Y_meas': df.groupby(['study_id']).agg({effect_statistic: 'first'}).reset_index()[effect_statistic].values,
+        'X_meas': df.groupby(['study_id']).agg({'lnRR': 'first'}).reset_index()['lnRR'].values,
+        'SD_Y': np.sqrt(df.groupby(['study_id']).agg(
+            {f'var_{effect_statistic}': 'first'}).reset_index()[f'var_{effect_statistic}'].values),
+        'SD_X': np.sqrt(df.groupby(['study_id']).agg(
+            {'var_lnRR': 'first'}).reset_index()['var_lnRR'].values),
+        'X0': df.groupby(['study_id']).apply(
+            lambda x: np.sum(x['baseline'] * x['N']) / np.sum(x['N'])
+        ).reset_index()[0].values,
+        'run_estimation': 1
+    }
 
-filename = os.path.join(stan_model_path, 'remr_bs.stan')
-cache_fn = get_pickle_filename(filename, model_name='remr_bs')
-try:
-    stan_model = pickle.load(open(cache_fn, 'rb'))
-except FileNotFoundError:
-    model_code = get_model_code(filename)
-    stan_model = pystan.StanModel(model_code=model_code)
-    with open(cache_fn, 'wb') as f:
-        pickle.dump(stan_model, f, protocol=pickle.HIGHEST_PROTOCOL)
+    stan_model = compile_model(
+        os.path.join(stan_model_path, 'remr_bs.stan'),
+        model_name='remr_bs'
+    )
 
-fit = stan_model.sampling(
-    data=data_dict,
-    iter=4000,
-    warmup=1000,
-    chains=3,
-    control={'adapt_delta': 0.99},
-    check_hmc_diagnostics=True,
-    seed=1
-)
-pystan.check_hmc_diagnostics(fit)
+    fit = stan_model.sampling(
+        data=data_dict,
+        iter=4000,
+        warmup=1000,
+        chains=3,
+        control={'adapt_delta': 0.99},
+        check_hmc_diagnostics=True,
+        seed=1
+    )
+    pystan.check_hmc_diagnostics(fit)
 
-data = az.from_pystan(
-    posterior=fit,
-    posterior_predictive=['Y_pred'],
-    observed_data=['Y_meas', 'X_meas', 'X0_meas'],
-    log_likelihood='log_lik',
-)
+    data = az.from_pystan(
+        posterior=fit,
+        posterior_predictive=['Y_pred'],
+        observed_data=['Y_meas', 'X_meas', 'X0'],
+        log_likelihood='log_lik',
+    )
+    return data
 
 
 def get_baseline_severity_posterior_plot(data):
@@ -106,6 +101,6 @@ def get_baseline_severity_posterior_plot(data):
     locs, labels = plt.xticks()
     plt.setp(axes, xticks=locs[1:-1], xticklabels=[int(round(52 * x, 0)) for x in locs[1:-1]])
 
-    plt.savefig(os.path.join(parent_dir_name, f'output/baseline_severity.svg'), format='svg', dpi=1200)
-
+    plt.savefig(os.path.join(parent_dir_name, f'output/baseline_severity.tiff'), format='tiff', dpi=500,
+                bbox_inches="tight")
     return plt
