@@ -8,8 +8,8 @@ plt.style.use('ggplot')
 parent_dir_name = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def get_lnMean_lnSD_plot(pool_arms=True, only_placebo_controled=True):
-    df = get_model_input_df(pool_arms=pool_arms, only_placebo_controled=only_placebo_controled)
+def get_lnMean_lnSD_plot():
+    df = get_model_input_df()
     # check whether the standard deviation of the change variable is correlated with its mean (in active and placebo)
     # and save the OLS summary as html file
     scale_list = ['HAMD17', 'HAMD21', 'HAMD24', 'HAMDunspecified', 'MADRS']
@@ -38,5 +38,18 @@ def get_lnMean_lnSD_plot(pool_arms=True, only_placebo_controled=True):
         plt.plot((df_a.lnMean.values[0], df_p.lnMean.values[0]),
                  (df_a.lnSD.values[0], df_p.lnSD.values[0]), c='gray', linestyle='-', alpha=0.2)
 
-    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.svg'), format='svg', dpi=1200)
+    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.tiff'), format='tiff', dpi=1200)
+    return plt
+
+
+def get_bar_chart_studies_per_depression_scale():
+    df = get_model_input_df()
+    tmp = df.groupby('scale').agg({'study_id': lambda x: len(x.unique())}).reset_index()
+    fig, ax = plt.subplots()
+    _ = ax.bar(x=tmp.scale, height=tmp.study_id, color='grey')
+    _ = ax.set_title('studies per depression scale')
+    _ = plt.xticks(rotation=75)
+    _ = plt.ylabel('count')
+    plt.savefig(os.path.join(parent_dir_name, f'output/bar_studies_per_depression_scale.tiff'), format='tiff', dpi=500,
+                bbox_inches="tight")
     return plt

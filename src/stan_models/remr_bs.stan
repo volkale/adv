@@ -4,6 +4,7 @@ data {
     real X_meas[N];
     real<lower=0> SD_Y[N];
     real<lower=0> SD_X[N];
+    real<lower=0, upper=1> X0[N];
     int<lower=0, upper=1> run_estimation; // a switch to evaluate the likelihood
 }
 
@@ -12,14 +13,17 @@ parameters {
     real beta;
     real<lower=0> tau; //between study variance
     real eta[N];
-
+    real gamma;
     real X[N];
 }
 
 transformed parameters {
+  real alpha[N];
   real Y[N];
-  for (i in 1:N)
-    Y[i] = mu + beta * X[i] + tau * eta[i];
+  for (i in 1:N) {
+    alpha[i] = mu + tau * eta[i];
+    Y[i] = alpha[i] + beta * X[i] + gamma * X0[i];
+  }
 }
 
 model {
@@ -27,6 +31,7 @@ model {
     beta ~ cauchy(0, 1);
     tau ~ cauchy(0, 1);
     eta ~ normal(0, 1);
+    gamma ~ normal(0, 1);
 
     X ~ normal(0, 2.5);
     X_meas ~ normal(X, SD_X);
@@ -44,7 +49,7 @@ generated quantities {
     real log_lik[N];
 
     for (i in 1:N) {
-        Y_pred[i] = normal_rng(mu + beta * X[i], tau);
+        Y_pred[i] = normal_rng(mu + beta * X[i] + gamma * X0[i], tau);
         log_lik[i] = normal_lpdf(Y_meas[i] | Y[i], SD_Y[i]);
     }
 }

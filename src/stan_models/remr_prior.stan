@@ -4,6 +4,10 @@ data {
     real X_meas[N];
     real<lower=0> SD_Y[N];
     real<lower=0> SD_X[N];
+    real mu_prior_loc;
+    real<lower=0> mu_prior_scale;
+    // real<lower=0> beta_prior_scale;
+    // real<lower=0> tau_prior_scale;
     int<lower=0, upper=1> run_estimation; // a switch to evaluate the likelihood
 }
 
@@ -23,7 +27,9 @@ transformed parameters {
 }
 
 model {
-    mu ~ cauchy(0, 1);
+    mu ~ normal(mu_prior_loc, mu_prior_scale);
+    // beta ~ normal(0, beta_prior_scale);
+    // tau ~ normal(0, tau_prior_scale);
     beta ~ cauchy(0, 1);
     tau ~ cauchy(0, 1);
     eta ~ normal(0, 1);
