@@ -38,7 +38,7 @@ def get_lnMean_lnSD_plot():
         plt.plot((df_a.lnMean.values[0], df_p.lnMean.values[0]),
                  (df_a.lnSD.values[0], df_p.lnSD.values[0]), c='gray', linestyle='-', alpha=0.2)
 
-    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.svg'), format='svg', dpi=1200)
+    plt.savefig(os.path.join(parent_dir_name, f'output/lnMean_lnSD_plot.tiff'), format='tiff', dpi=1200)
     return plt
 
 
@@ -50,5 +50,6 @@ def get_bar_chart_studies_per_depression_scale():
     _ = ax.set_title('studies per depression scale')
     _ = plt.xticks(rotation=75)
     _ = plt.ylabel('count')
-    plt.savefig(os.path.join(parent_dir_name, f'output/bar_studies_per_depression_scale.svg'), format='svg', dpi=1200)
+    plt.savefig(os.path.join(parent_dir_name, f'output/bar_studies_per_depression_scale.tiff'), format='tiff', dpi=500,
+                bbox_inches="tight")
     return plt

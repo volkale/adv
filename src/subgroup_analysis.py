@@ -86,10 +86,12 @@ def plot_model_comparison_CIs(model_res_dict):
         credible_interval=0.95,
         quartiles=True,
         colors='black',
-        var_names=drug_classes,
+        var_names=DRUG_CLASSES,
         model_names=['', '', '', ''],
         ax=ax
     )
-    ax.set_title('95% HDI exp(mu)')
-    plt.savefig(os.path.join(parent_dir_name, f'output/hdi_drug_class_comparison.svg'), format='svg', dpi=1200)
+    ax.set_title('95% HDI $e^\\mu$')
+    plt.tight_layout()
+    plt.savefig(os.path.join(parent_dir_name, f'output/hdi_drug_class_comparison.tiff'), format='tiff', dpi=500,
+                bbox_inches="tight")
     return plt

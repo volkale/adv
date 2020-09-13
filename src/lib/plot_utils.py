@@ -1,8 +1,8 @@
 import arviz as az
 
 
-def display_hpd(ax, values, credible_interval=0.95):
-    hpd_intervals = az.stats.hpd(values, credible_interval=credible_interval)
+def display_hpd(ax, values, hdi_prob=0.95):
+    hpd_intervals = az.stats.hdi(values, hdi_prob=hdi_prob)
 
     def format_as_percent(x, round_to=0):
         return "{0:.{1:d}f}%".format(100 * x, round_to)
@@ -31,6 +31,6 @@ def display_hpd(ax, values, credible_interval=0.95):
     ax.text(
         (hpd_intervals[0] + hpd_intervals[1]) / 2,
         plot_height * 0.3,
-        format_as_percent(credible_interval) + " HPD",
+        format_as_percent(hdi_prob) + " HDI",
         horizontalalignment="center",
     )

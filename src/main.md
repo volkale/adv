@@ -29,7 +29,8 @@ from fit_model import (
     get_model_results_dict,
     plot_model_comparison_waic,
     plot_model_comparison_CIs,
-    plot_posterior_exp_mu
+    plot_posterior_exp_mu,
+    get_forest_plot
     )
 
 %matplotlib inline
