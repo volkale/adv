@@ -32,6 +32,7 @@ from fit_model import (
     plot_posterior_exp_mu,
     get_forest_plot
     )
+from lib.summary_stats import stat_funcs, square_stat_funcs, exp_stat_funcs
 
 %matplotlib inline
 ```
@@ -67,15 +68,8 @@ plot_model_comparison_waic(model_res_dict)
 ```
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: np.exp(x).mean(),
-    'SD': lambda x: np.exp(x).std(),
-    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
-    'HDI 2.5%': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[0],
-    'HDI 97.5%': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[1]
-}
 mu_summary = az.summary(
-    model_res_dict['remr_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
+    model_res_dict['remr_lnVR'], stat_funcs=exp_stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
 )
 mu_summary.index = ['$e^\\mu$']
 mu_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
@@ -83,17 +77,11 @@ mu_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: x.mean(),
-    'Median': lambda x: np.percentile(x, q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[1]
-}
 beta_summary = az.summary(
     model_res_dict['remr_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['beta'], hdi_prob=0.95
 )
 beta_summary.index = ['$$\\beta$$']
-beta_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+beta_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 ```
 
 ```python
@@ -101,31 +89,19 @@ plot_posterior_exp_mu(model_res_dict)
 ```
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: x.mean(),
-    'Median': lambda x: np.percentile(x, q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[1]
-}
 beta_summary = az.summary(
     model_res_dict['rema_lnVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], hdi_prob=0.95
 )
 beta_summary.index = ['$$\\tau$$']
-beta_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+beta_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 ```
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: x.mean(),
-    'Median': lambda x: np.percentile(x, q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[1]
-}
 beta_summary = az.summary(
     model_res_dict['rema_lnCVR'], stat_funcs=stat_funcs, extend=False, var_names=['tau'], hdi_prob=0.95
 )
 beta_summary.index = ['$$\\tau$$']
-beta_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+beta_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 ```
 
 ```python
@@ -142,17 +118,10 @@ get_forest_plot(data)
 from sensitivity_analysis import get_prior_comparison
 
 model_res_dict = get_prior_comparison()
-stat_funcs = {
-    'Mean': lambda x: np.exp(x).mean(),
-    'SD': lambda x: np.exp(x).std(),
-    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
-    'HDI 2.5%': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[0],
-    'HDI 97.5%': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[1]
-}
 dfs = []
 for model in ['remr_prior_lnVR_reference', 'remr_prior_lnVR_optimisitc']:
     mu_summary = az.summary(
-        model_res_dict[model], stat_funcs=stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
+        model_res_dict[model], stat_funcs=exp_stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
     )
     mu_summary.index = [f'{model} $e^\\mu$']
     dfs.append(mu_summary)
@@ -167,52 +136,30 @@ plt = get_baseline_severity_posterior_plot(data)
 ```
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: np.exp(x).mean(),
-    'SD': lambda x: np.exp(x).std(),
-    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[1]
-}
 mu_summary = az.summary(
-    data, stat_funcs=stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
+    data, stat_funcs=exp_stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95
 )
 mu_summary.index = ['$e^\\mu$']
-mu_summary = mu_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+mu_summary = mu_summary[['Mean' 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 
-stat_funcs = {
-    'Mean': lambda x: (x ** 2).mean(),
-    'SD': lambda x: (x ** 2).std(),
-    'Median': lambda x: np.percentile(x ** 2, q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(x ** 2, hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(x ** 2, hdi_prob=0.95)[1]
-}
 tau_summary = az.summary(
-    data, stat_funcs=stat_funcs, extend=False, var_names=['tau'], hdi_prob=0.95
+    data, stat_funcs=square_stat_funcs, extend=False, var_names=['tau'], hdi_prob=0.95
 )
 tau_summary.index = ['$$\\tau^2$$']
-tau_summary = tau_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+tau_summary = tau_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 
-
-stat_funcs = {
-    'Mean': lambda x: x.mean(),
-    'SD': lambda x: x.std(),
-    'Median': lambda x: np.percentile(x, q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(x, hdi_prob=0.95)[1]
-}
 beta_summary = az.summary(
     data, stat_funcs=stat_funcs, extend=False, var_names=['beta'], hdi_prob=0.95
 )
 beta_summary.index = ['$\\beta$']
-beta_summary = beta_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+beta_summary = beta_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 
 
 gamma_summary = az.summary(
     data, stat_funcs=stat_funcs, extend=False, var_names=['gamma'], hdi_prob=0.95
 )
 gamma_summary.index = ['$\gamma$']
-gamma_summary = gamma_summary[['Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+gamma_summary = gamma_summary[['Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
 
 
 pd.concat(
@@ -231,23 +178,16 @@ plt = plot_model_comparison_CIs(model_res_dict)
 ```
 
 ```python
-stat_funcs = {
-    'Mean': lambda x: np.exp(x).mean(),
-    'SD': lambda x: np.exp(x).std(),
-    'Median': lambda x: np.percentile(np.exp(x), q=[50]),
-    '95% HDI l.b.': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[0],
-    '95% HDI u.b.': lambda x: az.stats.hdi(np.exp(x), hdi_prob=0.95)[1]
-}
 dfs = []
 for drug_class in ['atypical', 'ssri', 'ssnri', 'tca']:
     mu_summary = az.summary(
         model_res_dict[drug_class],
-        stat_funcs=stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95, round_to=2
+        stat_funcs=exp_stat_funcs, extend=False, var_names=['mu'], hdi_prob=0.95, round_to=2
     )
     mu_summary['drug class'] = drug_class
     mu_summary.index = ['$e^\\mu$']
     dfs.append(
-        mu_summary[['drug class', 'Mean', 'Median', '95% HDI l.b.', '95% HDI u.b.']]
+        mu_summary[['drug class', 'Mean', 'Median', 'HDI 2.5%', 'HDI 97.5%']]
     )
 df_summary = pd.concat(dfs, axis=0)
 df_summary

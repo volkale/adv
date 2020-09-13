@@ -16,13 +16,18 @@ parent_dir_name = os.path.dirname(dir_name)
 stan_model_path = os.path.join(dir_name, 'stan_models')
 
 
-def get_baseline_severity_model():
+def prepare_data():
     df = get_formatted_data()
     df = df.query('is_placebo_controlled==1 and has_mean_pre==1 and known_max_value==1')
     df = aggregate_treatment_arms(df)
     df = get_variability_effect_sizes(df)
     df['mean_pre'] = df.mean_pre.astype(float)
     df = df.query('mean_pre > 0')
+    return df
+
+
+def get_baseline_severity_model():
+    df = prepare_data()
 
     effect_statistic = 'lnVR'
     data_dict = {
@@ -77,6 +82,7 @@ def get_baseline_severity_posterior_plot(data):
         data.posterior.gamma.values,
         (data.posterior.gamma.shape[0] * data.posterior.gamma.shape[1], 1)
     )
+    df = prepare_data()
     norm_baseline_severity = np.linspace(
         df.baseline.min(), df.baseline.max(),
         100
