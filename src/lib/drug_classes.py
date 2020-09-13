@@ -1,3 +1,6 @@
+DRUG_CLASSES = ['atypical', 'ssri', 'ssnri', 'tca']
+
+
 def get_drug_class(drug):
     dose_indep_drug = drug.split(' ')[0].lower()
     if dose_indep_drug in ['sertraline', 'paroxetine', 'citalopram', 'escitalopram', 'fluoxetine', 'fluvoxamine']:

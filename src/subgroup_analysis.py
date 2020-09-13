@@ -4,6 +4,7 @@ import os
 import pystan
 import matplotlib.pyplot as plt
 from lib.stan_utils import compile_model, get_pickle_filename, get_model_code
+from lib.drug_classes import DRUG_CLASSES
 from prepare_data import get_formatted_data, add_rank_column, aggregate_treatment_arms, get_variability_effect_sizes
 
 
@@ -11,8 +12,6 @@ from prepare_data import get_formatted_data, add_rank_column, aggregate_treatmen
 dir_name = os.path.dirname(os.path.abspath(__file__))
 parent_dir_name = os.path.dirname(dir_name)
 stan_model_path = os.path.join(dir_name, 'stan_models')
-
-DRUG_CLASSES = ['atypical', 'ssri', 'ssnri', 'tca']
 
 
 def get_data_dict(df, effect_statistic):
